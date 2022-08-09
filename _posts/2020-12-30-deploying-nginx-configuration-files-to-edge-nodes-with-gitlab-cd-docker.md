@@ -6,7 +6,7 @@ date_updated: 2020-12-30T18:18:47.000Z
 tags: Linux, Web, Git, Docker, Container, NGINX
 ---
 
-[This post is a continuation of my previous post, "Deploying a 'CDN' with GeoDNS".](__GHOST_URL__/deploying-a-cdn-with-geodns/)
+[This post is a continuation of my previous post, "Deploying a 'CDN' with GeoDNS".]()
 
 One of the many challenges I faced when creating my CDN was a method of updating the vHost configuration files among multiple PoP’s. At first I was manually creating and modifying the conf files on a base, none-containerised install of NGINX (CentOS 8). It dawned on me when working with a client from CubeOps to install Ghost in a container, that this would be the prefect time to finally get around to learning how to utilise docker for myself.
 
