@@ -3,7 +3,7 @@ title: Securing SSH with a Jump Host and Wireguard
 slug: securing-ssh-with-a-jump-host
 date_published: 2021-08-17T20:13:02.000Z
 date_updated: 2021-12-27T11:36:41.000Z
-tags: Linux, Networking
+tags: [Linux, Networking]
 excerpt: Reduce the attack surface of SSH by limiting it to a VPN only. 
 ---
 
@@ -20,7 +20,7 @@ By combining the two technologies, we can create a **[Virtual Private Network (V
 ---
 
 ## Outlining *how* a Jump host functions
-![A animation depicting traffic going through the jumper node then to the destination node and back](__GHOST_URL__/content/images/2021/08/7232C832-C6E1-4E4C-85F3-ADAFE7BD2C62.gif)SSH utilises the jumper node as a intermediary for traffic
+![A animation depicting traffic going through the jumper node then to the destination node and back](/assets/images/ssh-vpn/7232C832-C6E1-4E4C-85F3-ADAFE7BD2C62.gif)SSH utilises the jumper node as a intermediary for traffic
 A jump host will act as a intermediary between yourself and the target machine. You may jump more then once, but in this example there will only be 1 added hop. Ordinarily the user would not be able to access the nodes, however, by utilizing the Jump node as a intermediary we can then SSH into a node on the VPN. 
 
 ---
@@ -34,7 +34,7 @@ With the release of Wireguard into the Linux kernel 5.6, I would like to conside
 As mentioned, Debian 11 runs the latest 5.10 LTS kernel which means it has native support for Wireguard. As such, installing it is simple: 
 
 `sudo apt install wireguard`
-![An image of the output from wireguard install](__GHOST_URL__/content/images/2021/08/deb11installl.png)
+![An image of the output from wireguard install](/assets/images/ssh-vpn/deb11installl.png)
 ### Debian 10 'Buster' 
 
 A little more complex, requires us to install the back ports repository and Linux headers. To do this, we must create a entry in `/etc/apt/sources.list.d` containing the repository.
@@ -50,7 +50,7 @@ And finally followed by the install.
 `sudo apt install wireguard linux-headers-$(uname -r)`
 
 When I was installing this on some of my routers, I noticed that I could not find the correct linux-headers package. In my case, this was because I had previously updated my kernel [without rebooting](https://www.youtube.com/watch?v=DPqdyoTpyEs). 
-![An image of the output of the above commands](__GHOST_URL__/content/images/2021/08/deb10install.png)
+![An image of the output of the above commands](/assets/images/ssh-vpn/deb10install.png)
 ## Rocky Linux 8.4 'Green Obsidian'
 
 Similar to Debian 10, Wireguard is not present in the base repository list nor Linux kernel until a new release comes out on the 5.10 LTS kernel. So for now, we must install both the `epel-release` and `elrepo-release` repositories. 
@@ -62,25 +62,25 @@ I was happy to read that the epel-release repository was maintained by the Fedor
 Next, we just have to install the packages:
 
 `sudo dnf install kmod-wireguard wireguard-tools`
-![An image of the above commands](__GHOST_URL__/content/images/2021/08/rockyinstall.png)
+![An image of the above commands](/assets/images/ssh-vpn/rockyinstall.png)
 ### Ubuntu Server 20.04 LTS 'Focal Fossa'
 
 While I'm not an Ubuntu person, I am sometimes jealous of the up to date package repositories... Similar to Debian 11, we just have to install the `wireguard` package. 
 
 `sudo apt install wireguard`
-![An image of the above command](__GHOST_URL__/content/images/2021/08/ubuntuinstall.png)
+![An image of the above command](/assets/images/ssh-vpn/ubuntuinstall.png)
 ---
 
 ## Configuring Wireguard
 
 Wireguard uses a public key authentication system. This means that each side of the tunnel has a store of keys to encrypt traffic with that only the correct peer may decrypt.
-![A animation depicting public key authentication](__GHOST_URL__/content/images/2021/08/10813180-DAE1-472F-BFBA-14AF8A0FA908.gif)Each peer communicate in a secure manner by encrypting it's traffic with the peer's public key
+![A animation depicting public key authentication](/assets/images/ssh-vpn/10813180-DAE1-472F-BFBA-14AF8A0FA908.gif)Each peer communicate in a secure manner by encrypting it's traffic with the peer's public key
 Comical drawing aside, the above illustration displays a abstracted view of the transaction. Do not that this transaction will happen on both sides, it is not a client-server model. 
 
 On both the Jumper and the endpoint, we need to generate a private key. This will create a public key based off it which we will need to take note of. This can be accomplished with the command:
 
 `wg genkey`
-![](__GHOST_URL__/content/images/2021/08/wggenkey.png)
+![](/assets/images/ssh-vpn/wggenkey.png)
 You'll need to do this command twice, and take note of the keys generated. 
 
 Once we have the keys, we can go ahead and configure our Wireguard configuration files. By default, Wireguard will read from the `/etc/wireguard` directory. In here, we want to create a file called `wg0.conf` and configure our tunnel. 
@@ -102,11 +102,11 @@ Then we can bring up the interface and view the public key it created. We will n
 `wg-quick up wg0`
 
 We can see that we received a basic verbose output stating what commands have been executed:
-![An image depicting an interface being created with the name 'wg0' and appropriate configurations to said interface](__GHOST_URL__/content/images/2021/08/wgquickup1-1.png)It will execute commands for us to create the interface
+![An image depicting an interface being created with the name 'wg0' and appropriate configurations to said interface](/assets/images/ssh-vpn/wgquickup1-1.png)It will execute commands for us to create the interface
 Now we can retreive the public key of this configuration file. Actually, the command will show us more information then this but as of right now it's only useful for this,
 
 `sudo wg show`
-![The above commands output](__GHOST_URL__/content/images/2021/08/wgshow1-1.png)The command will output the public key and other helpful information
+![The above commands output](/assets/images/ssh-vpn/wgshow1-1.png)The command will output the public key and other helpful information
 Once we have this public key, we are ready to configure the endpoint. 
 
 ### Endpoint
@@ -126,7 +126,7 @@ Similar to before, we need to edit `/etc/wireguard/wg0.conf` but this time we ha
 
 Example configuration file in addition to peer
 After bringing up the interface, we can see not only the interface configuration but a peer configuration!
-![The result of creating our wireguard config file with the peer notation added](__GHOST_URL__/content/images/2021/08/end1up.png)Full configuration for the endpoint
+![The result of creating our wireguard config file with the peer notation added](/assets/images/ssh-vpn/end1up.png)Full configuration for the endpoint
 Once more, we need to log the public key and adjust our Jump config.
 
 ### Jumper
@@ -147,9 +147,9 @@ Go ahead and replicate the peer configuration we created on the endpoint, exchan
 However, we can't "up" and already active interface so we must down it then up it to make the changes take effect.
 
 `wg-quick down wg0 && wg-quick up wg0`
-![An image of 'wg show' depicting an active tunnel between the two peers](__GHOST_URL__/content/images/2021/08/donewgconfig.png)Active Wireguard Tunnel!
+![An image of 'wg show' depicting an active tunnel between the two peers](/assets/images/ssh-vpn/donewgconfig.png)Active Wireguard Tunnel!
 Just like that, we have a connection between the two hosts that is lightweight and encrypted. We can verify it by pinging one of the IP's inside the tunnel:
-![](__GHOST_URL__/content/images/2021/08/pingwgtunnel.png)We can reach the endpoint's IP 
+![](/assets/images/ssh-vpn/pingwgtunnel.png)We can reach the endpoint's IP 
 ---
 
 ## Securing SSH

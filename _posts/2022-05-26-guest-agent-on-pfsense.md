@@ -3,7 +3,7 @@ title: QEMU Guest Agent on pfSense
 slug: guest-agent-on-pfsense
 date_published: 2022-05-26T06:45:20.000Z
 date_updated: 2022-05-26T06:47:22.000Z
-tags: Networking, Linux, UNIX, FreeBSD, Proxmox, Virtual Machine
+tags: [Networking, Linux, UNIX, FreeBSD, Proxmox, Virtual Machine]
 excerpt: A quick look at installing the qemu-guest-agent package on pfSense (FreeBSD).
 ---
 

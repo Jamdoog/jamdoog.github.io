@@ -3,7 +3,7 @@ title: Taking advantage of free S3 compatible storage on a £0.30 VPS
 slug: scaleway-s3-stardust
 date_published: 2021-09-30T22:50:46.000Z
 date_updated: 2021-09-30T22:52:58.000Z
-tags: Container, Docker, Linux, Networking, Web
+tags: [Container, Docker, Linux, Networking, Web]
 excerpt: Taking a look (and taking advantage of) Scaleway's cheap compute and storage offerings
 ---
 
