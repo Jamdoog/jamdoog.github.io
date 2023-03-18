@@ -26,7 +26,7 @@ Installation of the agent, while not point and click, is relatively easy.
 [*I should link this thread for reference to the instructions.*](https://forum.netgate.com/topic/162083/pfsense-vm-on-proxmox-qemu-agent-installation)*[Someone also made a auto-installer script.](https://github.com/Weehooey/pfSense-scripts/blob/main/install-qemu-guest-agent.sh)*
 
 To begin with, open up your console. **We need to access the shell so type in 8**.
-![](__GHOST_URL__/content/images/2022/05/Screenshot-from-2022-05-26-07-19-39.png)
+![](/assets/images/guest-agent-on-pfsense/console.png)
 Then to install the QEMU Guest Agent package, it is 1 simple command:
 
 `pkg install qemu-guest-agent`. 
@@ -44,9 +44,9 @@ Finally, we need to start the service on boot:
 `echo "sleep 3" >> /usr/local/etc/rc.d/qemu-agent.sh`
 
 `echo "service qemu-guest-agent-start" >> /usr/local/etc/rc.d/qemu-agent.sh`
-![](__GHOST_URL__/content/images/2022/05/Screenshot-from-2022-05-26-07-36-00.png)
+![](/assets/images/guest-agent-on-pfsense/script.png)
 Finally, ensure the agent is enabled on Proxmox itself.
-![](__GHOST_URL__/content/images/2022/05/Screenshot-from-2022-05-26-07-36-55.png)
+![](/assets/images/guest-agent-on-pfsense/enable_guest.png)
 After this, you will have to hard stop and start the VM. If you are like me and rely on it for a network connection, open up a root shell on the host and type:
 
 `qm stop <vmid>; qm start <vmid>`. This will stop and start it, regaining network connectivity when it's up again. 
@@ -58,4 +58,4 @@ After this, you will have to hard stop and start the VM. If you are like me and 
 The open source community has blessed us one again. 
 
 The easiest way of testing if the agent is functional is by viewing the summary of the VM. It should display all of the IP's of the VM.
-![](__GHOST_URL__/content/images/2022/05/Screenshot-from-2022-05-26-07-39-54.png)
+![](/assets/images/guest-agent-on-pfsense/ip_show.png)
