@@ -8,14 +8,15 @@ tags: Linux, Web
 
 ### Introduction
 
-When wondering how to pass the time I decided to optimise my website. I took initial steps such as minimising CSS and JS however incase you haven't seen, [my base site](https://jamdoog.com) actually is actually very small (and in reality serves no purpose). 
+When wondering how to pass the time I decided to optimise my website. I took initial steps such as minimising CSS and JS however incase you haven't seen, [my (old) base site](https://jamdoog.com) actually is actually very small (and in reality serves no purpose). 
 
 At the time my website was powered by 2 loadbalancers and 3 web servers located around the world. If you was curious, the setup was HAProxy following [this](https://www.tecmint.com/setup-nginx-haproxy-load-balancer-in-centos-8/) tutorial. Also, at this time, I used OpenBSD and had no idea how to use PF so my HTTP connections were left exposed at the origin...
 
 This worked however, it wasn't as satisfying as saying "I deliver content from a local edge node". Not only that, but with big companies like Cloudflare powering my websites since 2016-2019 the idea of creating my own "CDN" really appealed to me from a privacy standpoint but also a learning standpoint. 
 
 As it stood my web payload was already tiny and in practicallity the only issue for loading times was DNS requests and web server location. Infact, Google PageSpeed insights suggested it was practically perfect (100%). But I knew it wasn't optimal for people viewing from Asia or America. 
-![Google PageSpeed Insights showing 32/34 page optimisations](__GHOST_URL__/content/images/2020/12/Screen-Shot-2020-12-16-at-04.07.46-1.png)
+
+![Google PageSpeed Insights showing 32/34 page optimisations](/assets/images/nginx-edge-2020/Screen-Shot-2020-12-16-at-04.07.46.png)
 ---
 
 ## Servers?
@@ -69,7 +70,7 @@ After going through multiple pages of search queries I eventually settled on the
 The author of this page explains that they wanted a in-house soltion to move away from UltraDNS and that this was the solution they utilised. While I encourage you to read the original post, to abbreviate it, the scripts provided will pull from Maxmind and other GeoLocation databases and format them to be ACL compatible with BIND.
 
 With these IP ranges matched to countries, it allows for custom DNS responses based on the origin IP. Honestly, such a simple solution amazed me. Of course this isn't a foolproof method and there are some flaws in it but, this will be talked about later.
-![GeoDNS diagram outlining how the connection works](__GHOST_URL__/content/images/2020/12/geo-dns-diagram.png)GeoDNS diagram outlining how the connection works
+![GeoDNS diagram outlining how the connection works](/assets/images/nginx-edge-2020/geo-dns-diagram.png)GeoDNS diagram outlining how the connection works
 ## How do my edge servers provide content?
 
 NGINX. Reverse proxying is a beautiful technology which allows me to cache my website locally on each edge node once they have fetched before. I did look into varnish however after researching the differences between this approach I felt like NGINX was the most appropriate. 
@@ -79,21 +80,21 @@ NGINX. Reverse proxying is a beautiful technology which allows me to cache my we
 I unfortauntely didn't note down any previous measurements for speed. However, I can provide some figures of how this preforms as of now.
 
 ### Google PageSpeed
-![Google PageSpeed - Desktop test image. Image depicts a score of 100 and speed index of 0.2 seconds.](__GHOST_URL__/content/images/2020/12/google-pagespeed-desktop.png)Google PageSpeed - Desktop![Google PageSpeed - Mobile. Image depicts a loading time of 0.8 seconds.](__GHOST_URL__/content/images/2020/12/google-pagespeed-mobile.png)Google PageSpeed - Mobile
+![Google PageSpeed - Desktop test image. Image depicts a score of 100 and speed index of 0.2 seconds.](/assets/images/nginx-edge-2020/google-pagespeed-desktop.png)Google PageSpeed - Desktop![Google PageSpeed - Mobile. Image depicts a loading time of 0.8 seconds.](/assets/images/nginx-edge-2020/google-pagespeed-mobile.png)Google PageSpeed - Mobile
 ### Pingdom - London
-![Pingdom Website Speed Test. Total time: 124ms](__GHOST_URL__/content/images/2020/12/pingdom-london.png)Pingdom Speed Test - London
+![Pingdom Website Speed Test. Total time: 124ms](/assets/images/nginx-edge-2020/pingdom-london.png)
 ### Pingdom - Japan
-![Pingdom Speed Test - Japan. 1 second for DNS and 1.3 seconds for page load](__GHOST_URL__/content/images/2020/12/pingdom-japan.png)Pingdom Speed Test - Japan
+![Pingdom Speed Test - Japan. 1 second for DNS and 1.3 seconds for page load](/assets/images/nginx-edge-2020/pingdom-japan.png)
 ### Pingdom - United States (Washington)
-![Pingdom Page Speed insights. Washington. 500ms to load page.](__GHOST_URL__/content/images/2020/12/pingdom-washington.png)Pingdom Speed Test - Washington USA
+![Pingdom Page Speed insights. Washington. 500ms to load page.](/assets/images/nginx-edge-2020/pingdom-washington.png)
 ### WebPageTest - United States (Salt Lake City)
-![WebPageTest Salt Lake City test. 700ms fully loaded.](__GHOST_URL__/content/images/2020/12/webpagetest-saltlake.png)WebPageTest - Salt Lake City USA
+![WebPageTest Salt Lake City test. 700ms fully loaded.](/assets/images/nginx-edge-2020/webpagetest-saltlake.png)
 ### Uptrends - Netherlands
-![Uptrends website speed test image. Depicts 300ms to load page.](__GHOST_URL__/content/images/2020/12/uptrends-nl.png)Uptrends - Netherlands
+![Uptrends website speed test image. Depicts 300ms to load page.](/assets/images/nginx-edge-2020/uptrends-nl.png)
 ### GTmetrix - Canada
-![GTmetrix website speed test in vancouver. Loaded in 0.7s](__GHOST_URL__/content/images/2020/12/gtmetrix-canada.png)GTmetrix Speed Test - Vancouver
+![GTmetrix website speed test in vancouver. Loaded in 0.7s](/assets/images/nginx-edge-2020/gtmetrix-canada.png)
 ### Site 24x7 - Hong Kong
-![Image of Site 24x7 Speed Test using Hong Kong server. Took 3.8s to load fully](__GHOST_URL__/content/images/2020/12/24x7hk.png)Site 24x7 Speedtest - Hong Kong
+![Image of Site 24x7 Speed Test using Hong Kong server. Took 3.8s to load fully](/assets/images/nginx-edge-2020/24x7hk.png)
 ## Downsides to this approach
 
 DNS isn't a perfect technology and I have noticed that some lookups do have exceedingly high times (6+ seconds). While this is not true accross the board (as seen in above screneshots) it has happened at least a couple times. I believe this is down to my configuration of named and it's ACL pool. 

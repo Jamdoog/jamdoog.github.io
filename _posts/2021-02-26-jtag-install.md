@@ -9,24 +9,25 @@ excerpt: Revisiting the original JTAG hack for the Xbox 360 on a Jasper motherbo
 
 The Xbox 360 is a pretty important console to me. I only started playing around late 2011, but it still provided countless hours of entertainment and the idea of a modding the console really appealed to me. Since then, I have learned a lot from the process such as basic system security and electronic skills. 
 
-The original KK exploit was a stepping stone to the SMC (*JTAG*) hack. The SMC hack will keep the JTAG ports enabled on the motherboard and by bypassing the eFuse technology, it allowed for a downgrade back to the 4532 kernel and rebooting into a custom firmware. I would recommend [ModernVintageGamers](https://www.youtube.com/channel/UCjFaPUcJU1vwk193mnW_w1w) video on this if you would like to learn more:
-How the Xbox 360 Hypervisor Security was Defeated | MVG
----
+The original KK exploit was a stepping stone to the SMC (*JTAG*) hack. The SMC hack will keep the JTAG ports enabled on the motherboard and by bypassing the eFuse technology, it allowed for a downgrade back to the 4532 kernel and rebooting into a custom firmware. I would recommend ModernVintageGamers video on this if you would like to learn more:
+
+[How the Xbox 360 Hypervisor Security was Defeated | MVG](https://www.youtube.com/channel/UCjFaPUcJU1vwk193mnW_w1w)
+
 
 ## Identifying the vulnerability and your console
 
 The JTAG exploit is only vulnerable on PHAT consoles which have not been updated past summer 2009. This correlates to Kernel 7371. However, there are some slight exceptions. Notably, special edition Jasper consoles (2009) are not vulnerable such as the Resident Evil 5 and MW2. My friend purchased a new RE5 console for multiple hundreds to find out it's not vulnerable, don't do the same.
 
 For reference, this is how to find out your motherboard type:
-![Image showing power plugs and wattage to help identify console type](__GHOST_URL__/content/images/2021/02/phat.png)Motherboard identification guide
+![Image showing power plugs and wattage to help identify console type](/assets/images/jtag-2021/phat.png)Motherboard identification guide
 Out of these consoles, you ideally would have a Jasper motherboard. These output the least amount of heat and have good heat sinks to prevent the infamous RRoD. However if you take a look at the date, there was a very small window in which these were vulnerable. Also, v2 Jaspers can be had before September. For example, the Arcade 512MB Big Block. 
 
-When it comes to dumping your NAND, you can also identify if your console is vulnerable by the CB value. If it is on the following list, you are out of luck:
-
--Xenon: 1922, 1923, 1940, 7373
--Zephyr: 4571, 4572, 4578, 4579, 4580
--Falcon/Opus: 5771
--Jasper: 6750
+When it comes to dumping your NAND, you can also identify if your console is vulnerable by the CB value. 
+>**If it is on the following list, you are out of luck:**
+>>Xenon: 1922, 1923, 1940, 7373  
+>>Zephyr: 4571, 4572, 4578, 4579, 4580  
+>>Falcon/Opus: 5771  
+>>Jasper: 6750 
 
 I have had 3 Big Block JTAG Jaspers, and they have all been on CB 6723 which is vulnerable. I cannot comment for any other motherboard revision. 
 
@@ -35,7 +36,6 @@ So in short, you are looking for:
 - Dashboard 7371 or below (check CB for 7371)
 - Ideally a HDMI console made on 2008-2009
 
----
 
 ## **Doing the hack - Components**
 
@@ -58,20 +58,12 @@ For the hack you will also need the following software:
 - JRunner
 - NAND device drivers
 
-Each can be downloaded from here (temporarily down 26/2/21). Do note, these are not files compiled by myself so I am not responsible for any issues with them. I simply want to preserve known working methods. They are what I personally use. Below is where I got the files:
-
-- NAND-X: TheWeekendModder's website.
-- JR-Programmer: A close friend however I suspect they originate from TX directly.
-- JRunner: A close friend in combination with JRunner with Extras from Octal450 (17599 dash)
-
----
-
 ## Doing the hack - NAND wiring
 
 To proceed with the hack, we need to read the NAND of the console and ensure that we have at least 2 matching dumps. We will use these to create freeboot (hacked) images of our NAND that will allow for unsigned code to run. They can also be used to later restore to in the event that you might want to revert the hack.
-![An image depicting how to read the NAND using a NAND-X / JR-Programmer](__GHOST_URL__/content/images/2021/02/nandxphat-1.jpg)NAND-X / JR-Programmer wiring![An image depicting how to read the NAND with a Matrix SPI NAND reader/writer](__GHOST_URL__/content/images/2021/02/matrix-1.jpg)Matrix SPI Nand Flasher wiring
+![An image depicting how to read the NAND using a NAND-X / JR-Programmer](/assets/images/jtag-2021/nandxphat-1.jpg)NAND-X / JR-Programmer wiring![An image depicting how to read the NAND with a Matrix SPI NAND reader/writer](/assets/images/jtag-2021/matrix-1.jpg)Matrix SPI Nand Flasher wiring
 Below are some *rough *images of how I did my install. Take note that I decided to use the hard drive connector as ground. This is much easier than using the point on the motherboard and I would personally recommend it to avoid unnecessary complications. Also ensure that you 'tin' the points (pre-apply solder). This creates a much easier surface to attach wires to.
-![Image showing the HDD prong on a motherboard with solder on it](__GHOST_URL__/content/images/2021/02/IMG_0366.jpeg)Using HDD prong for ground![Image showing the NAND headers on the motherboard with balls of solder](__GHOST_URL__/content/images/2021/02/IMG_0367.jpeg)Tinned points on the motherboard for NAND reading. This is recommended.![Image showing coloured wires corresponding to the JR-Programmer NAND diagram](__GHOST_URL__/content/images/2021/02/IMG_0392.jpg)JR-Programmer installed
+![Image showing the HDD prong on a motherboard with solder on it](/assets/images/jtag-2021/IMG_0366.jpeg)Using HDD prong for ground![Image showing the NAND headers on the motherboard with balls of solder](/assets/images/jtag-2021/IMG_0367.jpeg)Tinned points on the motherboard for NAND reading. This is recommended.![Image showing coloured wires corresponding to the JR-Programmer NAND diagram](/assets/images/jtag-2021/IMG_0392.jpg)JR-Programmer installed
 It's not too important that these wire's aren't very neat. They are only temporary while we do operations with the NAND.
 
 ---
@@ -81,19 +73,28 @@ It's not too important that these wire's aren't very neat. They are only tempora
 At this stage, you should have the NAND headers installed. We will need JRunner to continue from this point. It can be found as a mirror on my website from here. Note that this install is covering the dashboard 17599. I expect this to be the final dashboard for the console, but if it's not, it's preferred you use the latest dashboard (although not required).
 
 Open up JRunner. You should be presented with a screen like this:
-![Image showing JRunner.](__GHOST_URL__/content/images/2021/02/image.png)JRunner dashboard
+![Image showing JRunner.](/assets/images/jtag-2021/image.png)JRunner dashboard
 It's important that your NAND device is detected. Ensure the drivers are installed and hopefully you will see an image of it in the center under the write Nand button.
-![](__GHOST_URL__/content/images/2021/02/image-1.png)JRunner dashboard with JR-Programmer detected
-Next, click the ? next to the Motherboard box. Make sure your console has power **BUT IS NOT POWERED ON**.If you power on your console while attached, you** WILL break** your programmer.This will query the flash config of your console, and if your wiring is correct, will return details about your console. Hopefully you have identified it as you have previously via the power+output or date of the console. If it worked, the output should fill with a flash config and a guess at your console type. Don't worry too much if it's not accurate, it just needs to work.
-![An image showing a arrow pointing to a button used to get information](__GHOST_URL__/content/images/2021/02/image-2.png)The ? to query the console
+![](/assets/images/jtag-2021/image-1.png)JRunner dashboard with JR-Programmer detected
+Next, click the ? next to the Motherboard box. 
+
+> **Make sure your console has power BUT IS NOT POWERED ON.**
+
+If you power on your console while attached, you** WILL break** your programmer.This will query the flash config of your console, and if your wiring is correct, will return details about your console. Hopefully you have identified it as you have previously via the power+output or date of the console. If it worked, the output should fill with a flash config and a guess at your console type. Don't worry too much if it's not accurate, it just needs to work.
+![An image showing a arrow pointing to a button used to get information](/assets/images/jtag-2021/image-2.png)The ? to query the console
 Next, click Read Nand. I would recommend you do it 3 times however 2 is enough. This ensures that it will dump it and the checksums are the same and thus meaning the NAND dumps are the same. If you see a mention of bad blocks, don't be alarmed. JRunner will map these to reserved areas which are used exclusively for this. I recommend you [read this post on Free60](https://free60project.github.io/wiki/NAND_Bad_Blocks/) for more information.
-![Image showing JRunner reading a nand with a green bar loading to represent progress](__GHOST_URL__/content/images/2021/02/jrunner-dump-1.png)JRunner reading my NAND
-After you have 2 reads, ensure that it says they are **MATCHING NANDS**. **DO NOT PROCEED **if they are not matching NAND's. These are your lifeline to verify any problems with your console.
+![Image showing JRunner reading a nand with a green bar loading to represent progress](/assets/images/jtag-2021/jrunner-dump-1.png)JRunner reading my NAND
+
+
+>After you have 2 reads, ensure that it says they are
+>**MATCHING NANDS**. **DO NOT PROCEED**  
+
+If they are not matching NAND's. These are your lifeline to verify any problems with your console.
 
 Tick the JTAG box on the side with no other options. We are not using the AUD_CLAMP alternative install for this.
 
 After this, click create XeLL Reloaded image and then proceeded by clicking Write XeLL Reloaded. 
-![Image showing a NAND dump being initialised and a XeLL image being generated in JRunner](__GHOST_URL__/content/images/2021/02/image-3.png)Creating a Xell-Reloaded image and writing.
+![Image showing a NAND dump being initialised and a XeLL image being generated in JRunner](/assets/images/jtag-2021/image-3.png)Creating a Xell-Reloaded image and writing.
 At this point your console should have the XeLL image written to the first 50 blocks. XeLL (Xenon Linux Loader) is used to grab our CPU Key which will decrypt our NAND and allow for us to reboot into a 4532 kernel. Disconnect your JR-Programmer but keep it soldered. We need it later.
 
 ---
@@ -101,12 +102,16 @@ At this point your console should have the XeLL image written to the first 50 bl
 ## Doing the hack - Physical Install
 
 Now we get to do the fun stuff. Installing the JTAG hack. Below are some diagrams of how to install it for respective motherboards. Please note, the second image depicts a LPT cable. This is not required and only there for legacy methods.
-![A image depicting a Xenon motherboard with wiring and diodes](__GHOST_URL__/content/images/2021/02/xenon_wiring-1.png)Xenon Motherboard JTAG wiring![A image depicting a generic motherboard with diodes and wiring](__GHOST_URL__/content/images/2021/02/SPI_-_JTAG_diagram_-zephyr-falcon-opus-jasper---1--4.png)Zephy, Opus, Falcon, Jasper Motherboard JTAG wiring
+![A image depicting a Xenon motherboard with wiring and diodes](/assets/images/jtag-2021/xenon_wiring-1.png)Xenon Motherboard JTAG wiring![A image depicting a generic motherboard with diodes and wiring](/assets/images/jtag-2021/SPI_-_JTAG_diagram_-zephyr-falcon-opus-jasper---1--4.png)Zephy, Opus, Falcon, Jasper Motherboard JTAG wiring
 Some people prefer to use the diodes with direct connections to each point. However, I opted to use a bit of wiring with them when installing. This created a cleaner look but is functionally identical. Make sure you orientate the image the correct way when looking at it. However, ensure that you use shrink wrap tubes to prevent any sort of shorting. This is highly recommended! 
 
 There's not much more to be said about this. It's a relatively simple proceedure. Some guides will tell you to solder to the RF plate, but this is completely unecessary. Below is my wiring (following this guide).
-![An image of a Jasper motherboard with the JTAG hack installed.](__GHOST_URL__/content/images/2021/02/IMG_0408-min.jpg)Final wiring. Note: Diodes are covered in shrink wrap but can be seen at the end![A image depicting a wire on the underside of a motherboard](__GHOST_URL__/content/images/2021/02/IMG_0402-min.JPG)Replacement RF Board wiring. This was cleaned up and taped down after
-After this, the hack should be complete. **UNPLUG YOUR NAND DEVICE.** Put on your RF Plate and power up the console. Make sure to put in a video signal as well as a Ethernet cable. This will make it much easier to get your CPU Key
+![An image of a Jasper motherboard with the JTAG hack installed.](/assets/images/jtag-2021/IMG_0408-min.jpg)Final wiring. Note: Diodes are covered in shrink wrap but can be seen at the end![A image depicting a wire on the underside of a motherboard](/assets/images/jtag-2021/IMG_0402.JPG)Replacement RF Board wiring. This was cleaned up and taped down after
+After this, the hack should be complete. 
+
+> **UNPLUG YOUR NAND DEVICE.** 
+
+Put on your RF Plate and power up the console. Make sure to put in a video signal as well as a Ethernet cable. This will make it much easier to get your CPU Key
 
 ---
 
@@ -115,10 +120,15 @@ After this, the hack should be complete. **UNPLUG YOUR NAND DEVICE.** Put on you
 After the hack is installed and we have our CPU key, we want to turn off the console so that we can write our freeboot image. This will look like the regular dashboard but with the ability to run unsigned applications. If you do not want to write out your CPU Key, put the IP your console got in the bottom right and click Get CPU key.
 
 On JRunner, ensure your NAND dump is on the source file and click Create XeBuild image. Once created, it will output a log of information such as your hack type, CPU key and other misc. information. These will be saved.
-![Image showing JRunner creating a updflash.bin file which will be used for flashing](__GHOST_URL__/content/images/2021/02/image-4.png)JRunner creating a XeBuild image
-At this point, you are at your final step. **TURN OFF YOUR CONSOLE.**
+![Image showing JRunner creating a updflash.bin file which will be used for flashing](/assets/images/jtag-2021/image-4.png)JRunner creating a XeBuild image
+At this point, you are at your final step. 
 
-Click Write Nand and it should begin to write the XeBuild image. After this, unplug everything **INCLUDING THE NAND READER** from your console and re-plug power and video and power on. Hopefully, you should be presented with the stock latest dashboard with a missing avatar. 
+>**TURN OFF YOUR CONSOLE.**
+
+Click Write Nand and it should begin to write the XeBuild image. After this, unplug everything 
+>**INCLUDING THE NAND READER** 
+
+From your console and re-plug power and video and power on. Hopefully, you should be presented with the stock latest dashboard with a missing avatar. 
 
 ---
 
@@ -127,7 +137,7 @@ Click Write Nand and it should begin to write the XeBuild image. After this, unp
 That's it. You might want to set a custom fan curve using a software like Dashlaunch and install XeX menu so you can browse the files on your console. These are paramount on any modded system, especially a phat, to help prevent a RRoD occurring. 
 
 It's quite satisfying to load Dashlaunch and be presented with a JTAG hack. There's a lot of significance to it as they are hard to come by. For note, you can always check your flash and console type in Dashlaunch at the bottom right.
-![An image of the software dashlaunch showing this console as a Japser JTAG](__GHOST_URL__/content/images/2021/02/IMG_0417-min.jpg)Dashlaunch showing the JTAG hack type
+![An image of the software dashlaunch showing this console as a Japser JTAG](/assets/images/jtag-2021/IMG_0417-min.jpg)Dashlaunch showing the JTAG hack type
 ---
 
 ## Final Thoughts

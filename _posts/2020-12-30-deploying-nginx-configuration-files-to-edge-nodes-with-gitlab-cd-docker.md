@@ -8,6 +8,8 @@ tags: Linux, Web, Git, Docker, Container, NGINX
 
 [This post is a continuation of my previous post, "Deploying a 'CDN' with GeoDNS".]()
 
+[Reviewing this in 2023 - This is when I knew little about containers. Consider this a 'test poc' ;)]()
+
 One of the many challenges I faced when creating my CDN was a method of updating the vHost configuration files among multiple PoP’s. At first I was manually creating and modifying the conf files on a base, none-containerised install of NGINX (CentOS 8). It dawned on me when working with a client from CubeOps to install Ghost in a container, that this would be the prefect time to finally get around to learning how to utilise docker for myself.
 
 When researching how I should handle this, I realised that I had to learn how to create my own images and how to host them before deploying them. Hosting them at a service like Dockerhub does work, but there is a significantly less learning curve involved in that and giving out my data to GitHub is not a preferred method. Especially when it involves private keys…
@@ -31,30 +33,15 @@ A server with the following criteria:
 I found that OpenVZ does not integrate well with containers by default unless the host specifically enables it. As such I recommend KVM.
 
 **DNS records**
+----------------
 
-Name
 
-Type
+| | | |  |
+|:------:|:-----:|:-------:|:----------:|
+| Name |Type | Value | Required |
+| gitlab | A | IP | Yes |
+| registry | CNAME | gitlab | No |
 
-Value
-
-Required
-
-gitlab
-
-A
-
-IP of instance
-
-Yes
-
-registry
-
-CNAME
-
-gitlab
-
-No
 
 The registry sub domain is not required unless you do not want to connect to your registry via a remote port. We will expose the registry via HTTPS later on. Feel free to setup a reverse proxy for it.
 
@@ -93,7 +80,9 @@ docker logs gitlab
 GitLab should now be live at [https://gitlab.example.com](https://gitlab.example.com/) and accessible over HTTPS. After setting up a root password, you can login and be presented with your personal projects. 
 
 We will be utilising the admin page which can be accessed by the wrench on the top taskbar. This is so that we can setup a GitLab runner which will be used for building the dockerfiles
-![A image depicting the landing page after GitLab sign in.](__GHOST_URL__/content/images/2020/12/gitlab-1.png)GitLab landing page![A image depicting the GitLab administrative panel page](__GHOST_URL__/content/images/2020/12/gitlab_admin-1.png)GitLab admin page
+
+![A image depicting the landing page after GitLab sign in.](/assets/images/nginx-edge-2020/gitlab-1.png)
+![A image depicting the GitLab administrative panel page](/assets/images/nginx-edge-2020/gitlab_admin-1.png)
 ---
 
 ## Creating a GitLab runner (via Docker)
@@ -101,11 +90,16 @@ We will be utilising the admin page which can be accessed by the wrench on the t
 GitLab requires runners in order to compile and test your commits. In our case, they will test our dockerfile, NGINX vHost configurations and deploy to the edge nodes.
 
 Setting this up proved to be difficult at first but after some researching I found that in order to make this work with docker we essentially have to deploy a “docker in docker” image which will pass through the hosts docker socket. In addition, we will need to make it a privileged runner otherwise it will not have the right permissions to run these tests. To begin with, head to the admin panel and then click runners.
-![Image depicting the selection of the runner tab on GitLab](__GHOST_URL__/content/images/2020/12/gitlab_admin_runner.png)Runner tab on the left
+
+![Image depicting the selection of the runner tab on GitLab](/assets/images/nginx-edge-2020/gitlab_admin_runner.png)
+
+Runner tab on the left
 After this, you should be presented with options about adding a new runner. In this case, we want to copy the token that it provides. We should also note down the URL, which should be the same as your gitlab instance. 
-![Image depicting the setup of a GitLab runner via URL and Token](__GHOST_URL__/content/images/2020/12/gitlab_admin_runner_token-1.png)GitLab runner manual token
+![Image depicting the setup of a GitLab runner via URL and Token](/assets/images/nginx-edge-2020/gitlab_admin_runner_token-1.png)
+GitLab runner manual token
 Once we have this, head over to your Linux box and put in the following:
 
+```
 docker run --rm -it -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitlab-runner register -n \
 
 --url $GITLAB_URL \
@@ -119,9 +113,11 @@ docker run --rm -it -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitla
 --docker-image "docker:stable" \
 
 --docker-privileged
+```
 
 This should then register the runner with your GitLab instance. However, we passed through the RM command which means it will exit after the command ends. To run the runner permanently, we need to once more run it.
 
+```
 docker run -d --name gitlab-runner --restart always 
 
 -v /srv/gitlab-runner/config:/etc/gitlab-runner 
@@ -129,7 +125,9 @@ docker run -d --name gitlab-runner --restart always
 -v /var/run/docker.sock:/var/run/docker.sock 
 
 gitlab/gitlab-runner:latest
-![Image depicting GitLab runner page with runner available for us](__GHOST_URL__/content/images/2020/12/gitlab_runner_success.png)GitLab runner page with runner
+```
+
+![Image depicting GitLab runner page with runner available for us](/assets/images/nginx-edge-2020/gitlab_runner_success.png)
 ---
 
 ## Setting up a Container Registry (Via GitLab)
@@ -138,50 +136,53 @@ The container registry on GitLab is quite simple to setup. Earlier when we deplo
 
 To begin with, we will want to edit the file **/srv/gitlab/config/gitlab.rb **on the hostand find  the following lines:
 
-registry_external_url
+`registry_external_url`
 
-registry_nginx['ssl_certificate']
+`registry_nginx['ssl_certificate']`
 
-registry_nginx['ssl_certificate_key']
+`registry_nginx['ssl_certificate_key']`
 
-registry_nginx['enable']
+`registry_nginx['enable']`
 
-registry_nginx['listen_port']
+`registry_nginx['listen_port']`
 
 If you are unfamiliar with basic file editing principles, do the following. It will take you to the sections of the config where these are stored:
 
-nano /srv/gitlab/config/gitlab.rb
+>nano /srv/gitlab/config/gitlab.rb
 
-CTRL + W
+>CTRL + W
 
-registry_external_url
+>registry_external_url
 
-CTRL + W
+>CTRL + W
 
-registry_nginx['enable']
+`registry_nginx['enable']`
 
 We then want to edit these values to the following, replacing gitlab.example.com with your instance url.
 
-registry_external_url '[https://gitlab.example.com:5555](https://gitlab.example.com:5555)'
+`registry_external_url` = '[https://gitlab.example.com:5555](https://gitlab.example.com:5555)'
 
-registry_nginx['ssl_certificate'] = "/etc/letsencrypt/live/gitlab.example.com/fullchain.pem
+`registry_nginx['ssl_certificate']` = `"/etc/letsencrypt/live/gitlab.example.com/fullchain.pem`
 
-registry_nginx['ssl_certificate_key'] = "/etc/letsencrypt/live/gitlab.example.com/privkey.pem
+`registry_nginx['ssl_certificate_key']` = `"/etc/letsencrypt/live/gitlab.example.com/privkey.pem`
 
-registry_nginx['enable'] = true
+`registry_nginx['enable'] = true`
 
-registry_nginx['listen_port'] = 5050
-![](__GHOST_URL__/content/images/2020/12/putty_nxaMPB6vk5.png)![](__GHOST_URL__/content/images/2020/12/registry_2.png)![](__GHOST_URL__/content/images/2020/12/registry_3.png)
-docker exec gitlab gitlab-ctl reconfigure
+`registry_nginx['listen_port'] = 5050`
+
+![](/assets/images/nginx-edge-2020/putty_nxaMPB6vk5.png)![](/assets/images/nginx-edge-2020/registry_2.png)![](/assets/images/nginx-edge-2020/registry_3.png)
+
+`docker exec gitlab gitlab-ctl reconfigure`
 
 ---
 
 ## Creating the repository & GitLab CI instructions
 
 When deploying the app to my edge nodes it first needs to be built and tested. To begin with, I added my initial NGINX configuration files then created a Dockerfile and .gitlab_ci.yml file.
-![Image depicting the files in my CDN repository](__GHOST_URL__/content/images/2020/12/cdn_files.png)All the files in my repository. Note: This is after my pushes.
+![Image depicting the files in my CDN repository](/assets/images/nginx-edge-2020/cdn_files.png)All the files in my repository. Note: This is after my pushes.
 The way my 'CDN' works is it caches a web request from my origin server and serves it. The Dockerfile will grab a nginx:mainline-alpine image and copy the vHost files to the respective directories (~/conf.d/) and then copy the SSL configuration files to ~/live/. Finally, it will test the vHost files and then start NGINX.
 
+```docker
 FROM nginx:mainline-alpine
 
 RUN rm /etc/nginx/conf.d/default.conf
@@ -207,6 +208,7 @@ RUN nginx -t
 EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]
+```
 
 The gitlab CI file will do the following:
 
